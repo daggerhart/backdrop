@@ -2,11 +2,20 @@
   display: flex;
   justify-content: space-between;
 }
-
 .views-admin .views-section .fieldset-wrapper .views-section-column {
   width: 49%;
 }
 
+.views-edit-form-preview-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+.views-edit-form-preview-wrapper .views-edit-view {
+  width: 65%;
+}
+.views-edit-form-preview-wrapper #views-preview-wrapper {
+  width: 33%;
+}
 
 
 /**

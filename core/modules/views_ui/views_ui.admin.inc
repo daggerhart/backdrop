@@ -961,7 +961,12 @@ function views_ui_edit_page_display($view, $display_id) {
 function views_ui_edit_page($view, $display_id = NULL) {
   $display_id = views_ui_edit_page_display($view, $display_id);
   if (!in_array($display_id, array(MENU_ACCESS_DENIED, MENU_NOT_FOUND))) {
-    $build = array();
+    $build = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => 'views-edit-form-preview-wrapper',
+      ],
+    ];
     $build['edit_form'] = backdrop_get_form('views_ui_edit_form', $view, $display_id);
     $build['preview'] = views_ui_build_preview($view, $display_id, FALSE);
   }
@@ -1573,6 +1578,8 @@ function views_ui_get_display_tab_details($view, $display) {
   $build = array(
     '#theme_wrappers' => array('container'),
     '#attributes' => array('id' => 'edit-display-settings-details'),
+    'top' => [],
+    'sections' => [],
   );
 
   $plugin = views_fetch_plugin_data('display', $view->display[$display->id]->display_plugin);
@@ -1611,7 +1618,6 @@ function views_ui_get_display_tab_details($view, $display) {
       '#title' => t('Theme & Appearance'),
     ],
   ];
-
 
   if ($display->id != 'default') {
     $build['top']['#theme_wrappers'] = array('container');
@@ -1694,13 +1700,6 @@ function views_ui_get_display_tab_details($view, $display) {
       );
     }
     $build['top']['actions']['suffix']['#markup'] = '</ul>';
-
-    // The area above the three columns.
-    $build['top']['display_title'] = array(
-      '#theme' => 'views_ui_display_tab_setting',
-      '#description' => t('Display name'),
-      '#link' => $display->handler->option_link(check_plain($display_title), 'display_title'),
-    );
   }
 
   // Each option (e.g. title, access, display as grid/table/list) fits into one
@@ -1739,15 +1738,25 @@ function views_ui_get_display_tab_details($view, $display) {
     }
   }
 
+  if ($display->id != 'default') {
+    $build['sections']['display']['first']['display_details']['display_title'] = [
+      '#theme' => 'views_ui_display_tab_setting',
+      '#description' => t('Display name'),
+      '#weight' => -10,
+      '#link' => $display->handler->option_link(check_plain($display_title), 'display_title'),
+    ];
+  }
+
   $build['sections']['query']['first']['filters'] = views_ui_edit_form_get_bucket('filter', $view, $display);
   $build['sections']['query']['first']['arguments'] = views_ui_edit_form_get_bucket('argument', $view, $display);
-  $build['sections']['query']['first']['sorts'] = views_ui_edit_form_get_bucket('sort', $view, $display);
+  $build['sections']['query']['second']['sorts'] = views_ui_edit_form_get_bucket('sort', $view, $display);
+
   $build['sections']['content']['first']['fields'] = views_ui_edit_form_get_bucket('field', $view, $display);
-  $build['sections']['content']['first']['relationships'] = views_ui_edit_form_get_bucket('relationship', $view, $display);
+  $build['sections']['content']['second']['relationships'] = views_ui_edit_form_get_bucket('relationship', $view, $display);
+
   $build['sections']['appearance']['first']['header'] = views_ui_edit_form_get_bucket('header', $view, $display);
   $build['sections']['appearance']['first']['footer'] = views_ui_edit_form_get_bucket('footer', $view, $display);
   $build['sections']['appearance']['first']['empty'] = views_ui_edit_form_get_bucket('empty', $view, $display);
-
   return $build;
 }
 

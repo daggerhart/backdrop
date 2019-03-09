@@ -1069,6 +1069,11 @@ class views_plugin_display extends views_plugin {
    */
   function options_summary(&$categories, &$options) {
     $categories = array(
+      'display_details' => array(
+        'title' => t('Display'),
+        'section' => 'display',
+        'column' => 'first',
+      ),
       'title' => array(
         'title' => t('Title'),
         'section' => 'appearance',
@@ -1093,9 +1098,6 @@ class views_plugin_display extends views_plugin {
         'title' => t('Access'),
         'section' => 'display',
         'column' => 'first',
-        'build' => array(
-          '#weight' => -5,
-        ),
       ),
       'pager' => array(
         'title' => t('Pager'),
@@ -1107,12 +1109,20 @@ class views_plugin_display extends views_plugin {
         'section' => 'appearance',
         'column' => 'second',
         'build' => array(
-          '#weight' => 1,
+          '#weight' => -1,
+        ),
+      ),
+      'query_settings' => array(
+        'title' => t('Query Settings'),
+        'section' => 'query',
+        'column' => 'second',
+        'build' => array(
+          '#weight' => 2,
         ),
       ),
       'other' => array(
         'title' => t('Other'),
-        'section' => 'query',
+        'section' => 'appearance',
         'column' => 'second',
         'build' => array(
           '#weight' => 2,
@@ -1122,7 +1132,7 @@ class views_plugin_display extends views_plugin {
 
     if ($this->display->id != 'default') {
       $options['display_id'] = array(
-        'category' => 'other',
+        'category' => 'display_details',
         'title' => t('Machine Name'),
         'value' => !empty($this->display->new_id) ? check_plain($this->display->new_id) : check_plain($this->display->id),
         'desc' => t('Change the machine name of this display.'),
@@ -1131,7 +1141,7 @@ class views_plugin_display extends views_plugin {
 
     $display_comment = check_plain(backdrop_substr($this->get_option('display_comment'), 0, 10));
     $options['display_comment'] = array(
-      'category' => 'other',
+      'category' => 'display_details',
       'title' => t('Comment'),
       'value' => !empty($display_comment) ? $display_comment : t('No comment'),
       'desc' => t('Comment or document this display.'),
@@ -1249,7 +1259,7 @@ class views_plugin_display extends views_plugin {
     $this->view->init_query();
     if ($this->view->query->get_aggregation_info()) {
       $options['group_by'] = array(
-        'category' => 'other',
+        'category' => 'query_settings',
         'title' => t('Use aggregation'),
         'value' => $this->get_option('group_by') ? t('Yes') : t('No'),
         'desc' => t('Allow grouping and aggregation (calculation) of fields.'),
@@ -1257,8 +1267,8 @@ class views_plugin_display extends views_plugin {
     }
 
     $options['query'] = array(
-      'category' => 'other',
-      'title' => t('Query settings'),
+      'category' => 'query_settings',
+      'title' => t('Advanced settings'),
       'value' => t('Settings'),
       'desc' => t('Allow to set some advanced settings for the query plugin'),
     );
