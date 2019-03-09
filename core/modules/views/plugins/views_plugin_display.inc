@@ -1071,41 +1071,49 @@ class views_plugin_display extends views_plugin {
     $categories = array(
       'title' => array(
         'title' => t('Title'),
+        'section' => 'appearance',
         'column' => 'first',
       ),
       'format' => array(
         'title' => t('Format'),
+        'section' => 'appearance',
         'column' => 'first',
       ),
       'fields' => array(
         'title' => t('Fields'),
+        'section' => 'content',
         'column' => 'first',
       ),
       'filters' => array(
         'title' => t('Filters'),
+        'section' => 'query',
         'column' => 'first',
       ),
       'access' => array(
         'title' => t('Access'),
-        'column' => 'second',
+        'section' => 'display',
+        'column' => 'first',
         'build' => array(
           '#weight' => -5,
         ),
       ),
       'pager' => array(
         'title' => t('Pager'),
+        'section' => 'appearance',
         'column' => 'second',
       ),
       'exposed' => array(
         'title' => t('Exposed form'),
-        'column' => 'third',
+        'section' => 'appearance',
+        'column' => 'second',
         'build' => array(
           '#weight' => 1,
         ),
       ),
       'other' => array(
         'title' => t('Other'),
-        'column' => 'third',
+        'section' => 'query',
+        'column' => 'second',
         'build' => array(
           '#weight' => 2,
         ),

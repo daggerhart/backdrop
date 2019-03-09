@@ -1583,6 +1583,36 @@ function views_ui_get_display_tab_details($view, $display) {
   // @todo: Figure out why get_option doesn't work here.
   $is_enabled = $display->handler->get_option('enabled');
 
+  $section_form = [
+    '#type' => 'fieldset',
+    '#attributes' => ['class' => ['views-section']],
+    'first' => [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['views-section-column', 'views-section-column-first']],
+    ],
+    'second' => [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['views-section-column', 'views-section-column-second']],
+    ],
+  ];
+
+  $build['sections'] = [
+    '#theme_wrappers' => ['container'],
+    'display' => $section_form + [
+      '#title' => t('Display Settings'),
+    ],
+    'query' => $section_form + [
+      '#title' => t('Query'),
+    ],
+    'content' => $section_form + [
+      '#title' => t('Content & Relationships'),
+    ],
+    'appearance' => $section_form + [
+      '#title' => t('Theme & Appearance'),
+    ],
+  ];
+
+
   if ($display->id != 'default') {
     $build['top']['#theme_wrappers'] = array('container');
     $build['top']['#attributes']['id'] = 'edit-display-settings-top';
@@ -1673,32 +1703,6 @@ function views_ui_get_display_tab_details($view, $display) {
     );
   }
 
-  $build['columns'] = array();
-  $build['columns']['#theme_wrappers'] = array('container');
-  $build['columns']['#attributes'] = array('id' => 'edit-display-settings-main', 'class' => array('clearfix', 'views-display-columns'));
-
-  $build['columns']['first']['#theme_wrappers'] = array('container');
-  $build['columns']['first']['#attributes'] = array('class' => array('views-display-column', 'first'));
-
-  $build['columns']['second']['#theme_wrappers'] = array('container');
-  $build['columns']['second']['#attributes'] = array('class' => array('views-display-column', 'second'));
-
-  $build['columns']['second']['settings'] = array();
-  $build['columns']['second']['header'] = array();
-  $build['columns']['second']['footer'] = array();
-  $build['columns']['second']['pager'] = array();
-
-  // The third column buckets are wrapped in a container.
-  // @todo: Convert this to #type = details when available.
-  $build['columns']['third']['#theme_wrappers'] = array('container');
-  $build['columns']['third']['#attributes'] = array('class' => array('views-display-column', 'third'));
-  // Specify an id that won't change after AJAX requests. Use the same ID across
-  // different displays of the same view, so changing displays doesn't
-  // affect the column display.
-  $build['columns']['third']['#attributes']['id'] = 'views-ui-advanced-column-' . $view->name;
-  $build['columns']['third']['collapse']['#theme_wrappers'] = array('container');
-  $build['columns']['third']['collapse']['#attributes'] = array();
-
   // Each option (e.g. title, access, display as grid/table/list) fits into one
   // of several "buckets," or boxes (Format, Fields, Sort, and so on).
   $buckets = array();
@@ -1713,43 +1717,36 @@ function views_ui_get_display_tab_details($view, $display) {
     $buckets[$option['category']]['build'][$id] = views_ui_edit_form_get_build_from_option($id, $option, $view, $display);
   }
 
-  // Place each bucket into the proper column.
+  // Place each bucket into the proper section & column.
   foreach ($buckets as $id => $bucket) {
-    // Let buckets identify themselves as belonging in a column.
-    if (isset($bucket['column']) && isset($build['columns'][$bucket['column']])) {
+    // Let buckets identify their section, default to display.
+    $section = 'display';
+    if (isset($build['sections'][$bucket['section']])) {
+      $section = $bucket['section'];
+    }
+
+    // Let buckets identify their column, default to second.
+    $column = 'second';
+    if (isset($build['sections'][$section][$bucket['column']])) {
       $column = $bucket['column'];
     }
-    // If a bucket doesn't pick one of our predefined columns to belong to, put
-    // it in the last one.
-    else {
-      $column = 'third';
-    }
+
     if (isset($bucket['build']) && is_array($bucket['build'])) {
-      // The third column is a collapsible div, so
-      // the structure of the form is a little different for this column
-      if ($column === 'third') {
-        $build['columns'][$column]['collapse'][$id] = $bucket['build'];
-        $build['columns'][$column]['collapse'][$id]['#theme_wrappers'][] = 'views_ui_display_tab_bucket';
-        $build['columns'][$column]['collapse'][$id]['#title'] = !empty($bucket['title']) ? $bucket['title'] : '';
-        $build['columns'][$column]['collapse'][$id]['#name'] = !empty($bucket['title']) ? $bucket['title'] : $id;
-      }
-      else {
-        $build['columns'][$column][$id] = $bucket['build'];
-        $build['columns'][$column][$id]['#theme_wrappers'][] = 'views_ui_display_tab_bucket';
-        $build['columns'][$column][$id]['#title'] = !empty($bucket['title']) ? $bucket['title'] : '';
-        $build['columns'][$column][$id]['#name'] = !empty($bucket['title']) ? $bucket['title'] : $id;
-      }
+      $build['sections'][$section][$column][$id] = $bucket['build'];
+      $build['sections'][$section][$column][$id]['#theme_wrappers'][] = 'views_ui_display_tab_bucket';
+      $build['sections'][$section][$column][$id]['#title'] = !empty($bucket['title']) ? $bucket['title'] : '';
+      $build['sections'][$section][$column][$id]['#name'] = !empty($bucket['title']) ? $bucket['title'] : $id;
     }
   }
 
-  $build['columns']['first']['fields'] = views_ui_edit_form_get_bucket('field', $view, $display);
-  $build['columns']['first']['filters'] = views_ui_edit_form_get_bucket('filter', $view, $display);
-  $build['columns']['first']['sorts'] = views_ui_edit_form_get_bucket('sort', $view, $display);
-  $build['columns']['second']['header'] = views_ui_edit_form_get_bucket('header', $view, $display);
-  $build['columns']['second']['footer'] = views_ui_edit_form_get_bucket('footer', $view, $display);
-  $build['columns']['third']['collapse']['arguments'] = views_ui_edit_form_get_bucket('argument', $view, $display);
-  $build['columns']['third']['collapse']['relationships'] = views_ui_edit_form_get_bucket('relationship', $view, $display);
-  $build['columns']['third']['collapse']['empty'] = views_ui_edit_form_get_bucket('empty', $view, $display);
+  $build['sections']['query']['first']['filters'] = views_ui_edit_form_get_bucket('filter', $view, $display);
+  $build['sections']['query']['first']['arguments'] = views_ui_edit_form_get_bucket('argument', $view, $display);
+  $build['sections']['query']['first']['sorts'] = views_ui_edit_form_get_bucket('sort', $view, $display);
+  $build['sections']['content']['first']['fields'] = views_ui_edit_form_get_bucket('field', $view, $display);
+  $build['sections']['content']['first']['relationships'] = views_ui_edit_form_get_bucket('relationship', $view, $display);
+  $build['sections']['appearance']['first']['header'] = views_ui_edit_form_get_bucket('header', $view, $display);
+  $build['sections']['appearance']['first']['footer'] = views_ui_edit_form_get_bucket('footer', $view, $display);
+  $build['sections']['appearance']['first']['empty'] = views_ui_edit_form_get_bucket('empty', $view, $display);
 
   return $build;
 }

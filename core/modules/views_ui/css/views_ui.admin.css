@@ -1,3 +1,14 @@
+.views-admin .views-section .fieldset-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.views-admin .views-section .fieldset-wrapper .views-section-column {
+  width: 49%;
+}
+
+
+
 /**
  * The .admin.css file is intended to only contain positioning and size
  * declarations. For example: display, position, float, clear, and overflow.
